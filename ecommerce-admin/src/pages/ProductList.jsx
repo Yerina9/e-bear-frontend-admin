@@ -147,7 +147,7 @@ const NoticePage = () => {
         // <span className="notice-main-section-title">{titleInfo.title}</span>
         //             <hr />
         <div className = "notice-main-section-table" >
-            <DataTable pageInfo={pageInfo} headCells={headCells} rows={rows} searchConfig={searchConfig} labelConfig={labelConfig} />
+            <DataTable pageInfo={pageInfo} headCells={headCells} rows={rows} searchConfig={searchConfig} labelConfig={labelConfig} writeFunc={() => console.log('글쓰기 버튼')}/>
         </div >
     );
 };

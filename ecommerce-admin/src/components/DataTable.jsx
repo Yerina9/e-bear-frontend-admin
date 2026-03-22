@@ -222,52 +222,64 @@ export default function DataTableTable({ pageInfo, headCells, rows, searchConfig
               headCells={headCells}
             />
             <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.num);
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.num}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
+              {visibleRows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={headCells.length + 1}
+                    align="center"
+                    sx={{ py: 6, color: 'text.secondary' }}
                   >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        onChange={(event) => handleClick(event, row.num)}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>
-                    {headCells.map((headCell, cellIndex) => (
-                      <TableCell
-                        key={headCell.id}
-                        // 첫 번째 셀 (번호)에만 scope="row"와 component="th"를 적용
-                        component={cellIndex === 0 ? "th" : "td"}
-                        scope={cellIndex === 0 ? "row" : undefined}
-                        id={cellIndex === 0 ? labelId : undefined}
-                        padding={headCell.disablePadding ? 'none' : 'normal'}
-                        align={headCell.align || 'left'}
-                        sx={{
-                          width: headCell.width,
-                          minWidth: headCell.width,
-                          maxWidth: headCell.width,
-                        }}
-                      >
-                        {renderCellValue(row[headCell.id])}
+                    데이터가 없습니다.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                visibleRows.map((row, index) => {
+                  const isItemSelected = selected.includes(row.num);
+                  const labelId = `enhanced-table-checkbox-${index}`;
+
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.num}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          onChange={(event) => handleClick(event, row.num)}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
                       </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
+                      {headCells.map((headCell, cellIndex) => (
+                        <TableCell
+                          key={headCell.id}
+                          component={cellIndex === 0 ? "th" : "td"}
+                          scope={cellIndex === 0 ? "row" : undefined}
+                          id={cellIndex === 0 ? labelId : undefined}
+                          padding={headCell.disablePadding ? 'none' : 'normal'}
+                          align={headCell.align || 'left'}
+                          sx={{
+                            width: headCell.width,
+                            minWidth: headCell.width,
+                            maxWidth: headCell.width,
+                          }}
+                        >
+                          {renderCellValue(row[headCell.id])}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
+              )}
+
+              {emptyRows > 0 && visibleRows.length > 0 && (
                 <TableRow
                   style={{
                     height: (dense ? 33 : 53) * emptyRows,

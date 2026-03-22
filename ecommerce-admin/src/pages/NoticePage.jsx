@@ -1,41 +1,12 @@
 import "./NoticePage.css";
-import SideNavigation from "../components/SideNavigation";
-import Header from "../components/Header";
+import api from "../api/axios";
 import DataTable from "../components/DataTable";
-import { href } from "react-router-dom";
-
-const generateDummyRows = (count) => {
-    const data = [];
-    for (let i = 1; i <= count; i++) {
-        const day = i < 10 ? `0${i}` : `${i}`;
-        const year = 2024;
-        const month = (i % 12) + 1;
-        const monthStr = month < 10 ? `0${month}` : `${month}`;
-
-        data.push({
-            num: i,
-            subject: `공지사항 제목 ${i}입니다.`,
-            writer: `관리자${i % 5 + 1}`,
-            regDt: `${year}-${monthStr}-${day}`,
-            viewCnt: Math.floor(Math.random() * 500) + 50,
-            testNum: Math.floor(Math.random() * 100) + 1,
-        });
-    }
-    return data.reverse(); // 역순으로 정렬
-};
-
-// 더미 데이터 갯수 할당 및 생성 
-const rows = generateDummyRows(105);
+import { useEffect, useState } from "react";
 
 const NoticePage = () => {
-    let navigation = [
-        { subject: 'HOME', url: '/admin/home' },
-        { subject: 'HOME', url: '/admin/home' },
-        { subject: 'HOME', url: '/admin/home' },
-        { subject: 'HOME', url: '/admin/home' },
-        { subject: 'HOME', url: '/admin/home' },
-        { subject: 'HOME', url: '/admin/home' }
-    ];
+    const [rows, setRows] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     // 보여주고 싶은 검색 조건 설정 (SearchHeader를 제어)
     const searchConfig = {
@@ -45,19 +16,6 @@ const NoticePage = () => {
         showDelete: true,    // 삭제 버튼 
         showWrite: true,      // 글쓰기 버튼 
     };
-
-    let userInfo = {
-        name: '이베어',
-        email: 'ebear@knou.ac.kr'
-    }
-
-    let notice = {
-        content: '[알림] [안내] 공식대행사 대행관 설정 가이드 공지 및 불법영업 행위 주의 안내'
-    }
-
-    let titleInfo = {
-        title: '공지사항',
-    }
 
     let pageInfo = {
         searchList: {
@@ -115,11 +73,53 @@ const NoticePage = () => {
         searchLabel: "검색조건"
     };
 
+    useEffect(() => {
+        const fetchNoticeList = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const response = await api.get("/list");
+
+                const mappedRows = response.map((item) => ({
+                    num: item.notificationNo,
+                    subject: item.title,
+                    writer: item.writer,
+                    regDt: item.regDt ? item.regDt.substring(0, 10) : "",
+                    viewCnt: item.viewCnt,
+                    notificationNo: item.notificationNo,
+                }));
+
+                setRows(mappedRows);
+            } catch (err) {
+                console.error("공지사항 목록 조회 실패:", err);
+                console.error("status:", err.response?.status);
+                console.error("data:", err.response?.data);
+                setError("공지사항 목록을 불러오지 못했습니다.");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNoticeList();
+    }, []);
+
+    if (loading) {
+        return <div className="notice-main-section-table">로딩 중...</div>;
+    }
+
+    if (error) {
+        return <div className="notice-main-section-table">{error}</div>;
+    }
+
     return (
-        // <span className="notice-main-section-title">공지사항</span>
-        //             <hr />
         <div className="notice-main-section-table">
-            <DataTable pageInfo={pageInfo} headCells={headCells} rows={rows} searchConfig={searchConfig} labelConfig={labelConfig} writeFunc={() => window.location.href='/admin/notice/write'} />
+            <DataTable
+                pageInfo={pageInfo}
+                headCells={headCells}
+                rows={rows}
+                searchConfig={searchConfig}
+                labelConfig={labelConfig}
+                writeFunc={() => window.location.href = '/admin/notice/write'} />
         </div>
     );
 };
